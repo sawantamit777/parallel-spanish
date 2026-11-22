@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8e1022">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Parallel Spanish · Habla conmigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1f2d5a; --navy-2:#2c3d73; --red:#d0564c; --red-2:#b8443b;
+  --bg:#f7f2e7; --surface:#fffdf8; --surface-2:#f1ead9; --text:#1b2340; --muted:#68708f;
+  --line:#e5dccb; --brand:#1f2d5a; --mic:#1f2d5a; --ok:#2f8a66; --warn:#b97b0c; --bad:#c0463d;
+  --miss-bg:#f7d9d5; --miss-fg:#9d2f26; --hit:#2f8a66;
+  --shadow:0 1px 2px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.07);
+  --radius:18px;
+  --f-ui:'Inter','Noto Sans Devanagari',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-fr:'Fraunces',Georgia,'Times New Roman',serif;
+  --f-dv:'Noto Sans Devanagari','Nirmala UI','Mangal',sans-serif;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#0d1330; --surface:#161e42; --surface-2:#1e2852; --text:#efe8d8; --muted:#a0a8cb;
+  --line:#2a3462; --brand:#b9c6ff; --mic:#33478a; --miss-bg:#4a2229; --miss-fg:#ffb4a9; --hit:#6fd3a8;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--f-ui);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent;min-height:100vh}
+[lang="mr"],.dv{font-family:var(--f-dv)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--navy);display:grid;place-items:center;overflow:hidden;flex:none}
+.logo i{display:block;width:100%;height:100%;background:linear-gradient(180deg,#c8102e 0 25%,#f6c200 25% 75%,#c8102e 75%)}
+.brand h1{margin:0;font-family:var(--f-fr);font-weight:600;font-size:1.25rem;letter-spacing:.2px;color:var(--brand)}
+.brand p{margin:0;font-size:.8rem;color:var(--muted);font-style:italic}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:1.15rem}
+.top-actions{display:flex;gap:8px}
+.tabs{display:flex;gap:4px;padding:4px 0 8px;overflow-x:auto;scrollbar-width:none}
+.tab{flex:1;min-height:42px;border:0;background:transparent;border-radius:12px;font-weight:600;color:var(--muted);padding:0 10px;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* banners & toast */
+.banner{margin:10px 0;padding:12px 14px;border-radius:14px;background:#fff3d6;color:#5d4410;border:1px solid #efd9a0;font-size:.92rem}
+[data-theme="dark"] .banner{background:#3b3216;color:#f4e2b0;border-color:#5a4b20}
+.banner.err{background:#fde3df;color:#7a2219;border-color:#f2bdb5}
+[data-theme="dark"] .banner.err{background:#47201f;color:#ffc9c0;border-color:#6d2f2b}
+.toast{position:fixed;left:50%;bottom:calc(200px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 16px;border-radius:12px;font-size:.92rem;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;z-index:60;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* talk controls */
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:12px 0 4px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:2px}
+.seg button{border:0;background:transparent;min-height:40px;padding:0 14px;border-radius:10px;font-weight:600;color:var(--muted);font-size:.93rem}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* feed */
+.feed{padding:8px 0 calc(230px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+body:not([data-view="talk"]) .feed{padding-bottom:30px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;animation:rise .25s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.src{padding:14px 16px 12px;border-bottom:1px dashed var(--line)}
+.src-meta{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.badge{display:inline-block;background:var(--surface-2);border-radius:999px;padding:2px 10px;font-weight:600;color:var(--text)}
+.src-text{margin:0;font-size:1.08rem;font-weight:500}
+.src-en{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.tgt{padding:14px 16px 16px}
+.tgt+.tgt{border-top:1px solid var(--line)}
+.tgt-head{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.lang-tag{font-size:.72rem;font-weight:700;letter-spacing:.08em;background:var(--navy);color:#fff;border-radius:6px;padding:2px 7px}
+[data-theme="dark"] .lang-tag{background:#33478a}
+.reg{font-size:.78rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 9px}
+.reg::before{content:'register: '}
+.tgt-text{display:block;width:100%;text-align:left;border:0;background:transparent;padding:4px 0;font-family:var(--f-fr);font-size:1.75rem;line-height:1.25;font-weight:500;color:var(--brand)}
+.tgt-text:not(.static)::after{content:' ⌄';font-size:.9rem;color:var(--muted);font-family:var(--f-ui)}
+.tgt-text[aria-expanded="true"]::after{content:' ⌃'}
+.pron{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 2px;font-size:.98rem}
+.pron-en{color:var(--red-2);font-weight:600;letter-spacing:.2px}
+[data-theme="dark"] .pron-en{color:#ff9d93}
+.pron-dv{color:var(--muted);font-family:var(--f-dv)}
+.hide-deva .pron-dv{display:none}
+.note{margin:8px 0 0;font-size:.9rem;background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.note::before{content:'💡 '}
+.words{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:6px 10px;text-align:left;display:flex;flex-direction:column;min-height:44px}
+.chip b{font-family:var(--f-fr);font-weight:600;font-size:1.05rem}
+.chip small{color:var(--muted);font-size:.78rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions button,.btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:.92rem}
+.actions button:active,.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.navy{background:var(--navy);border-color:var(--navy);color:#fff}
+[data-act="save"][aria-pressed="true"]{background:#fff0c9;border-color:#e8c766;color:#6b4c00}
+[data-theme="dark"] [data-act="save"][aria-pressed="true"]{background:#4a3c12;border-color:#7a6320;color:#ffe08a}
+button.rec{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;animation:blink 1s ease-in-out infinite}
+@keyframes blink{50%{opacity:.75}}
+.loading{padding:16px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:bounce 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-5px);opacity:1}}
+.err{margin:12px 16px 16px;padding:12px;border-radius:12px;background:#fde3df;color:#7a2219;font-size:.92rem}
+[data-theme="dark"] .err{background:#47201f;color:#ffc9c0}
+.err .actions{margin-top:8px}
+
+/* score */
+.score{margin-top:12px;padding:12px;border-radius:12px;background:var(--surface-2)}
+.score-top{display:flex;align-items:center;gap:12px}
+.score-num{font-size:1.9rem;font-weight:700;min-width:3ch;font-variant-numeric:tabular-nums}
+.s-good{color:var(--ok)}.s-mid{color:var(--warn)}.s-low{color:var(--bad)}
+[data-theme="dark"] .s-good{color:#6fd3a8}
+.bar{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:currentColor;transition:width .5s}
+.score-msg{font-weight:600}
+.score-words{margin:10px 0 4px;font-family:var(--f-fr);font-size:1.25rem}
+.score-words .ok{color:var(--hit)}
+.score-words mark.miss{background:var(--miss-bg);color:var(--miss-fg);border-radius:6px;padding:0 4px;text-decoration:underline wavy;text-underline-offset:4px}
+.heard{margin:4px 0 0;font-size:.88rem;color:var(--muted)}
+.item{flex-wrap:wrap}
+.item .voice-panel{flex-basis:100%;margin-top:4px}
+.voice-panel audio{width:100%;margin-top:6px}
+.vrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0}
+.score-listen{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:blink .8s infinite}
+
+/* empty / panels */
+.empty{text-align:center;padding:34px 18px;color:var(--muted)}
+.empty .big{font-family:var(--f-fr);font-size:1.5rem;color:var(--text);margin:0 0 6px}
+.samples{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:14px}
+.panel h2{margin:0;font-family:var(--f-fr);font-weight:600;font-size:1.35rem}
+.panel h3{margin:0 0 10px;font-size:1rem}
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.count{font-family:var(--f-ui);font-size:.85rem;background:var(--surface-2);border-radius:999px;padding:2px 10px;vertical-align:middle;margin-left:6px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.item{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--bg)}
+.item-main{min-width:0}
+.item-tgt{margin:0;font-family:var(--f-fr);font-size:1.25rem;color:var(--brand)}
+.item-src{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.item .pron{font-size:.88rem}
+.item-actions{display:flex;gap:6px;flex:none}
+.item-actions button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.word-grid{display:flex;flex-wrap:wrap;gap:8px}
+.eyebrow{margin:0;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;color:var(--red)}
+.pr-card{padding:18px}
+.pr-src{font-size:1.5rem;margin:6px 0 2px;font-weight:500}
+.pr-answer{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.pr-stats{text-align:center;color:var(--muted);font-size:.9rem}
+.quiz{margin-top:14px}
+.quiz-q{font-size:1.05rem;margin:0 0 10px}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quiz-opts button{min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-family:var(--f-fr);font-size:1.1rem}
+.quiz-opts button.right{background:#d8f1e5;border-color:#7cc7a3;color:#14523a}
+.quiz-opts button.wrong{background:var(--miss-bg);border-color:#e7a198;color:var(--miss-fg)}
+[data-theme="dark"] .quiz-opts button.right{background:#173f30;color:#b6f0d6;border-color:#2d7458}
+
+/* dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:linear-gradient(to top,var(--bg) 78%,transparent);padding:18px 0 calc(12px + env(safe-area-inset-bottom))}
+body:not([data-view="talk"]) .dock{display:none}
+.interim{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px;min-height:44px;box-shadow:var(--shadow)}
+.interim .fin{color:var(--text);font-weight:500}
+.interim .part{color:var(--muted);font-style:italic}
+.type-row{display:flex;gap:8px;margin-bottom:12px}
+.type-row input{flex:1;min-width:0;min-height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 14px;font:inherit;font-family:var(--f-ui)}
+.type-row button{min-width:52px;border-radius:14px;border:0;background:var(--navy);color:#fff;font-size:1.2rem}
+.mic-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.mic-side{display:flex}
+.mic-side.l{justify-content:flex-end}
+.mic-status{font-size:.88rem;color:var(--muted);font-weight:600}
+.mic{width:86px;height:86px;border-radius:50%;border:0;background:var(--mic);color:#fff;display:grid;place-items:center;position:relative;box-shadow:0 6px 20px rgba(31,45,90,.35);transition:background .2s,transform .1s}
+.mic:active{transform:scale(.96)}
+.mic svg{width:36px;height:36px}
+.mic .waves{display:none;gap:4px;align-items:center;height:30px}
+.mic .waves i{width:5px;background:#fff;border-radius:3px;animation:wave 1s ease-in-out infinite}
+.mic .waves i:nth-child(2){animation-delay:.15s}.mic .waves i:nth-child(3){animation-delay:.3s}.mic .waves i:nth-child(4){animation-delay:.45s}
+@keyframes wave{0%,100%{height:8px}50%{height:28px}}
+.mic[data-state="listening"]{background:var(--red)}
+.mic[data-state="listening"]::before,.mic[data-state="listening"]::after{content:'';position:absolute;inset:0;border-radius:50%;border:3px solid var(--red);animation:pulse 1.6s ease-out infinite;pointer-events:none}
+.mic[data-state="listening"]::after{animation-delay:.8s}
+@keyframes pulse{from{transform:scale(1);opacity:.7}to{transform:scale(1.75);opacity:0}}
+.mic[data-state="translating"]::before{content:'';position:absolute;inset:-7px;border-radius:50%;border:4px solid transparent;border-top-color:var(--red);border-right-color:var(--red);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mic[data-state="speaking"]{background:var(--ok)}
+.mic[data-state="speaking"] svg{display:none}
+.mic[data-state="speaking"] .waves{display:flex}
+.pause-btn{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;padding:0 14px}
+.hint{text-align:center;font-size:.78rem;color:var(--muted);margin-top:8px}
+kbd{font-family:var(--f-ui);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
+@media (hover:none){.hint .kb{display:none}}
+
+/* settings */
+dialog{border:0;border-radius:20px;padding:0;width:min(560px,94vw);max-height:90vh;background:var(--surface);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(13,19,48,.55)}
+.dlg-head{position:sticky;top:0;background:var(--surface);display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);z-index:1}
+.dlg-head h2{margin:0;font-family:var(--f-fr);font-weight:600}
+.dlg-body{padding:6px 18px 20px}
+fieldset{border:0;padding:0;margin:16px 0 0}
+legend{font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:6px;padding:0}
+.field{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+.field>span{font-weight:600;font-size:.92rem}
+.field small{color:var(--muted);font-size:.8rem}
+.field input[type=text],.field input[type=password],.field input[type=url],.field select{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);padding:0 12px;font:inherit;width:100%}
+.inline{display:flex;gap:8px;align-items:center}
+.inline>*:first-child{flex:1;min-width:0}
+.check{display:flex;align-items:center;gap:10px;min-height:40px;font-weight:500}
+.check input{width:22px;height:22px;accent-color:var(--red)}
+input[type=range]{width:100%;accent-color:var(--red)}
+.test-out{font-size:.9rem;margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+@media (min-width:640px){.tgt-text{font-size:2rem}}
+</style>
+</head>
+<body data-view="talk">
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><i></i></div>
+        <div><h1>Parallel Spanish</h1><p>Habla conmigo</p></div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="darkBtn" aria-label="Toggle dark mode" title="Dark mode">☾</button>
+        <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">⚙</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-view="talk" aria-selected="true">Talk</button>
+      <button class="tab" role="tab" data-view="practice" aria-selected="false">Practice</button>
+      <button class="tab" role="tab" data-view="phrasebook" aria-selected="false">Phrasebook</button>
+      <button class="tab" role="tab" data-view="recap" aria-selected="false">Recap</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banners"></div>
+
+  <section id="view-talk" class="view">
+    <div class="controls">
+      <div class="seg" id="langSeg" role="group" aria-label="Input language"
+           title="Auto uses the Marathi recogniser and lets the translator detect Marathi or English. For long pure-English sentences, pick English.">
+        <button data-lang="auto">Auto</button>
+        <button data-lang="mr-IN" lang="mr">मराठी</button>
+        <button data-lang="en-IN">English</button>
+      </div>
+      <div class="seg" id="modeSeg" role="group" aria-label="Mode">
+        <button data-mode="tap">Tap</button>
+        <button data-mode="conversation">Conversation</button>
+      </div>
+    </div>
+    <div id="feed" class="feed" aria-live="polite"></div>
+  </section>
+
+  <section id="view-practice" class="view" hidden>
+    <div class="panel"><div class="row"><h2>Practice</h2><span class="muted" id="prInfo"></span></div>
+      <p class="muted" style="margin:6px 0 0">Your saved phrases come up in random order. Say the answer aloud and you get a score.</p></div>
+    <div id="prBody"></div>
+  </section>
+
+  <section id="view-phrasebook" class="view" hidden>
+    <div class="panel">
+      <div class="row"><h2>Phrasebook <span class="count" id="pbCount">0</span></h2>
+        <button class="btn navy" data-act="export">⬇ Export CSV</button></div>
+      <div id="pbList" class="list"></div>
+    </div>
+  </section>
+
+  <section id="view-recap" class="view" hidden>
+    <div id="recapBody"></div>
+  </section>
+</main>
+
+<footer class="dock" id="dock">
+  <div class="wrap">
+    <div id="interim" class="interim" hidden aria-live="polite"></div>
+    <form class="type-row" id="typeForm" autocomplete="off">
+      <input id="typeInput" type="text" placeholder="…or type in Marathi / English" aria-label="Type a sentence">
+      <button type="submit" aria-label="Translate typed sentence">➤</button>
+    </form>
+    <div class="mic-row">
+      <div class="mic-side l"><button class="pause-btn" id="pauseBtn" hidden>⏸ Pause</button></div>
+      <button class="mic" id="micBtn" data-state="idle" aria-label="Tap to talk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>
+        <span class="waves" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </button>
+      <div class="mic-side"><span class="mic-status" id="micStatus">Tap to talk</span></div>
+    </div>
+    <div class="hint">Tap the mic<span class="kb"> · or hold <kbd>Space</kbd> to talk</span></div>
+  </div>
+</footer>
+
+<dialog id="settingsDlg" aria-labelledby="setTitle">
+  <div class="dlg-head"><h2 id="setTitle">Settings</h2><button class="icon-btn" id="closeSettings" aria-label="Close settings">✕</button></div>
+  <div class="dlg-body">
+    <fieldset>
+      <legend>Translation engine</legend>
+      <label class="field"><span>Provider</span>
+        <select id="sProvider">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI or OpenAI-compatible</option>
+        </select></label>
+      <label class="field"><span>API key</span>
+        <div class="inline"><input id="sKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your API key">
+          <button class="btn" type="button" id="sKeyShow">Show</button></div>
+        <small>The key is stored only in this browser (localStorage) and sent only to the provider you choose.</small></label>
+      <label class="field"><span>Model</span><input id="sModel" type="text" spellcheck="false"></label>
+      <label class="field" id="sWsRow"><span>Workspace ID <small>(optional)</small></span><input id="sWorkspace" type="text" spellcheck="false" placeholder="wrkspc_…">
+        <small>Leave blank for a normal key. Fill it only if the API says a workspace is required for your key (see Console → Workspaces).</small></label>
+      <label class="field" id="sBaseRow"><span>Base URL</span><input id="sBaseUrl" type="url" spellcheck="false">
+        <small>For OpenAI-compatible services, e.g. https://api.openai.com/v1</small></label>
+      <div class="inline"><button class="btn navy" type="button" id="sTest">Test: “माझं नाव अमित आहे”</button></div>
+      <div class="test-out" id="sTestOut"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Shareable audio (ElevenLabs)</legend>
+      <p class="muted" style="margin:0;font-size:.85rem">Phone voices can't be saved as files. To share the Spanish as a voice note, add a free ElevenLabs API key and pick one of their ready-made voices.</p>
+      <label class="field"><span>ElevenLabs API key</span>
+        <div class="inline"><input id="sElKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk_…">
+          <button class="btn" type="button" id="sElKeyShow">Show</button></div></label>
+      <label class="field"><span>Voice</span>
+        <div class="inline"><select id="sElVoice"><option value="">Add the key, then tap Load voices</option></select>
+          <button class="btn" type="button" id="sElLoad">Load voices</button></div>
+        <small>Pick any voice; all of them speak Spanish with the multilingual model.</small></label>
+      <label class="field"><span>Voice model</span><input id="sElModel" type="text" spellcheck="false"></label>
+      <div class="inline"><button class="btn navy" type="button" id="sElTest">Test: “¡Hola! Me llamo Amit.”</button></div>
+      <div class="test-out" id="sElOut"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Listening</legend>
+      <label class="field"><span>Default input language</span>
+        <select id="sInputLang"><option value="auto">Auto (Marathi recogniser + AI detection)</option><option value="mr-IN">Marathi (mr-IN)</option><option value="en-IN">English (en-IN)</option></select></label>
+    </fieldset>
+    <fieldset>
+      <legend>Voice &amp; speech</legend>
+      <div id="sVoices"></div>
+      <label class="field"><span>Speech rate: <output id="sRateOut">0.95</output></span>
+        <input id="sRate" type="range" min="0.5" max="1.2" step="0.05"></label>
+      <label class="check"><input type="checkbox" id="sAutoSpeak"> Speak the translation automatically</label>
+    </fieldset>
+    <fieldset>
+      <legend>Learning</legend>
+      <label class="check"><input type="checkbox" id="sShowDeva"> Show the Devanagari pronunciation</label>
+      <label class="field"><span>Default formality</span>
+        <select id="sFormality"><option value="informal">tú (informal)</option><option value="formal">usted (formal)</option></select>
+        <small>Clearly casual or polite sentences always follow your tone. This setting decides neutral ones.</small></label>
+      <div class="field"><span>Also translate into</span><div id="sTargets"></div></div>
+    </fieldset>
+    <fieldset>
+      <legend>Data</legend>
+      <div class="inline" style="flex-wrap:wrap"><button class="btn" type="button" id="sClearHistory">Clear history</button>
+        <button class="btn" type="button" id="sClearPb">Clear phrasebook</button></div>
+    </fieldset>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+(() => {
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmtTime = ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const isDeva = s => /[ऀ-ॿ]/.test(s);
+
+/* ---------- target languages (array, not hard-coded) ---------- */
+const TARGETS = [
+  { code: 'es', key: 'spanish', name: 'Spanish', locale: 'es-ES', informal: 'tú', formal: 'usted',
+    sample: '¡Hola! Me llamo Amit.', praise: ['¡Perfecto!', '¡Muy bien!', 'No está mal, ¿otra vez?', '¡Otra vez!'],
+    filler: ['gracias', 'casa', 'agua', 'amigo', 'comer', 'hablar', 'libro', 'tren', 'mañana', 'pequeño'] },
+  { code: 'fr', key: 'french', name: 'French', locale: 'fr-FR', informal: 'tu', formal: 'vous',
+    sample: "Bonjour ! Je m'appelle Amit.", praise: ['Parfait !', 'Très bien !', 'Pas mal, encore une fois ?', 'Encore une fois !'],
+    filler: ['merci', 'maison', 'eau', 'ami', 'manger', 'parler', 'livre', 'train', 'demain', 'petit'] },
+  { code: 'de', key: 'german', name: 'German', locale: 'de-DE', informal: 'du', formal: 'Sie',
+    sample: 'Hallo! Ich heiße Amit.', praise: ['Perfekt!', 'Sehr gut!', 'Nicht schlecht, noch mal?', 'Noch einmal!'],
+    filler: ['danke', 'Haus', 'Wasser', 'Freund', 'essen', 'sprechen', 'Buch', 'Zug', 'morgen', 'klein'] },
+];
+const T = code => TARGETS.find(t => t.code === code);
+const PRIMARY = 'es';
+const TONES = ['neutral', 'casual', 'excited', 'happy', 'playful', 'affectionate', 'urgent', 'worried', 'sad', 'angry', 'polite', 'formal'];
+const TONE_EMOJI = { neutral: '🙂', casual: '😎', excited: '🤩', happy: '😊', playful: '😜', affectionate: '🥰', urgent: '⚡', worried: '😟', sad: '😢', angry: '😠', polite: '🙏', formal: '👔' };
+const TONE_PROSODY = { neutral: [1, 1], casual: [1.03, 1.02], excited: [1.12, 1.18], happy: [1.06, 1.12], playful: [1.08, 1.15], affectionate: [0.95, 1.08], urgent: [1.15, 1.08], worried: [0.97, 1.05], sad: [0.85, 0.9], angry: [1.08, 0.92], polite: [0.95, 1.02], formal: [0.95, 0.98] };
+const TONE_VOICE = { excited: [0.3, 0.6], happy: [0.35, 0.5], playful: [0.3, 0.6], urgent: [0.3, 0.55], angry: [0.3, 0.7], affectionate: [0.4, 0.45], worried: [0.4, 0.45], sad: [0.45, 0.45], casual: [0.45, 0.3], neutral: [0.55, 0.15], polite: [0.55, 0.15], formal: [0.6, 0.1] };
+
+/* ---------- storage (localStorage wrapped in try/catch) ---------- */
+const K = { settings: 'ps.settings.v1', history: 'ps.history.v1', phrasebook: 'ps.phrasebook.v1' };
+const mem = {};
+let storageWarned = false;
+const store = {
+  get(k, def) {
+    if (k in mem) return mem[k];
+    try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch { return def; }
+  },
+  set(k, v) {
+    mem[k] = v;
+    try { localStorage.setItem(k, JSON.stringify(v)); }
+    catch { if (!storageWarned) { storageWarned = true; toast('Browser storage is unavailable or full. Changes are kept for this visit only.'); } }
+  }
+};
+
+const PROVIDER_DEFAULTS = {
+  anthropic: { model: 'claude-haiku-5-5' },
+  openai: { model: 'gpt-4.1-mini', baseUrl: 'https://api.openai.com/v1' }
+};
+const DEFAULT_SETTINGS = {
+  elKey: '', elVoiceId: '', elModel: 'eleven_multilingual_v2',
+  inputLang: 'auto', mode: 'tap', provider: 'anthropic', apiKey: '', model: PROVIDER_DEFAULTS.anthropic.model,
+  baseUrl: PROVIDER_DEFAULTS.openai.baseUrl, workspaceId: '', voices: {}, rate: 0.95, autoSpeak: true, showDeva: true,
+  formality: 'informal', targets: [PRIMARY], dark: null
+};
+let settings = Object.assign({}, DEFAULT_SETTINGS, store.get(K.settings, {}));
+if (!Array.isArray(settings.targets)) settings.targets = [PRIMARY];
+if (!settings.targets.includes(PRIMARY)) settings.targets.unshift(PRIMARY);
+// First run: reuse the API keys and voice already saved by the French or German app on this same site.
+if (!store.get(K.settings, null)) {
+  try {
+    const prev = JSON.parse(localStorage.getItem('pf.settings.v1') || localStorage.getItem('pg.settings.v1') || 'null');
+    if (prev) ['apiKey', 'provider', 'model', 'baseUrl', 'workspaceId', 'elKey', 'elVoiceId', 'elVoiceName', 'elModel', 'rate', 'dark', 'inputLang', 'showDeva', 'autoSpeak']
+      .forEach(k => { if (prev[k] !== undefined && prev[k] !== '') settings[k] = prev[k]; });
+    store.set(K.settings, settings);
+  } catch { }
+}
+settings.voices = settings.voices || {};
+let history = store.get(K.history, []);
+let phrasebook = store.get(K.phrasebook, []);
+if (!Array.isArray(history)) history = [];
+if (!Array.isArray(phrasebook)) phrasebook = [];
+const saveSettings = () => store.set(K.settings, settings);
+const saveHistory = () => { if (history.length > 400) history = history.slice(-400); store.set(K.history, history); };
+const savePhrasebook = () => store.set(K.phrasebook, phrasebook);
+const enabledTargets = () => TARGETS.filter(t => settings.targets.includes(t.code));
+
+/* ---------- UI refs ---------- */
+const feed = $('#feed'), micBtn = $('#micBtn'), micStatus = $('#micStatus'), pauseBtn = $('#pauseBtn');
+const interimEl = $('#interim'), dlg = $('#settingsDlg');
+
+let toastTimer;
+function toast(msg, ms = 3200) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+function banner(id, html, kind = '') {
+  let el = document.getElementById('banner-' + id);
+  if (!html) { el && el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'banner-' + id; $('#banners').append(el); }
+  el.className = 'banner ' + kind; el.innerHTML = html;
+}
+
+/* ---------- speech synthesis ---------- */
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let voices = [];
+function loadVoices() {
+  if (!synth) return;
+  const v = synth.getVoices();
+  if (v.length !== voices.length) { voices = v; renderVoiceSettings(); }
+}
+if (synth) {
+  loadVoices();
+  if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', loadVoices);
+  else synth.onvoiceschanged = loadVoices;
+  [300, 1000, 2500, 5000].forEach(ms => setTimeout(loadVoices, ms)); // some Android builds never fire voiceschanged
+}
+function voiceScore(v, locale) {
+  const l = (v.lang || '').replace('_', '-').toLowerCase();
+  const lc = locale.toLowerCase(), base = lc.slice(0, 2);
+  if (!l.startsWith(base)) return -1;
+  let s = l === lc ? 3 : 1;
+  if (/natural|neural|online|premium|enhanced/i.test(v.name)) s += 5;
+  if (/google/i.test(v.name)) s += 4;
+  if (/microsoft/i.test(v.name)) s += 2;
+  if (v.localService === false) s += 1;
+  return s;
+}
+function voicesFor(locale) { return voices.filter(v => voiceScore(v, locale) >= 0).sort((a, b) => voiceScore(b, locale) - voiceScore(a, locale)); }
+function pickVoice(code) {
+  const list = voicesFor(T(code).locale), want = settings.voices[code];
+  return (want && list.find(v => v.voiceURI === want || v.name === want)) || list[0] || null;
+}
+
+const st = { sid: 0, rec: null, listening: false, listenOnce: false, translating: 0, speaking: false,
+  conv: false, paused: false, ptt: false, finals: '', interim: '', carry: '', silenceTimer: null,
+  lastError: null, fatal: false, failStreak: 0 };
+let speakToken = 0;
+const liveUtterances = []; // keep references so Chrome doesn't garbage-collect them mid-speech
+
+function stopSpeaking() {
+  speakToken++;
+  if (synth) synth.cancel();
+  if (st.speaking) { st.speaking = false; refreshMic(); }
+}
+function speakOnce(text, code, rate, tone) {
+  return new Promise(resolve => {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice(code);
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : T(code).locale;
+    const pr = TONE_PROSODY[tone] || [1, 1];
+    u.rate = Math.min(2, rate * pr[0]); u.pitch = pr[1];
+    let done = false;
+    const guard = setTimeout(() => fin(), 3000 + text.length * 160 / rate);
+    function fin() { if (done) return; done = true; clearTimeout(guard); const i = liveUtterances.indexOf(u); if (i >= 0) liveUtterances.splice(i, 1); resolve(); }
+    u.onend = fin; u.onerror = fin;
+    liveUtterances.push(u);
+    synth.speak(u);
+  });
+}
+async function speakSeq(items, { rate = settings.rate, times = 1, gap = 650 } = {}) {
+  if (!synth) { toast('This browser cannot speak (no speechSynthesis).'); return; }
+  items = items.filter(i => i && i.text);
+  if (!items.length) return;
+  if (st.listening) abortListening();
+  stopSpeaking();
+  const my = speakToken;
+  await sleep(60); // Chrome sometimes drops a speak() issued right after cancel()
+  if (my !== speakToken) return;
+  st.speaking = true; refreshMic();
+  try {
+    for (let n = 0; n < times; n++) {
+      for (const it of items) { if (my !== speakToken) return; await speakOnce(it.text, it.code, rate, it.tone); }
+      if (n < times - 1) { await sleep(gap); }
+    }
+  } finally {
+    if (my === speakToken) { st.speaking = false; refreshMic(); }
+  }
+}
+
+/* ---------- speech recognition ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+const SILENCE_MS = 1200;
+const recogLang = () => settings.inputLang === 'auto' ? 'mr-IN' : settings.inputLang;
+const langLabel = l => ({ 'mr-IN': 'Marathi', 'en-IN': 'English', 'fr-FR': 'French', 'de-DE': 'German', 'es-ES': 'Spanish' }[l] || l);
+
+function micErrMsg(code) {
+  return ({
+    'not-allowed': 'Microphone access is blocked. Allow the mic for this page (the icon in the address bar), then try again.',
+    'service-not-allowed': 'The browser blocked the speech service. Allow the mic for this page and use Chrome or Edge.',
+    'audio-capture': 'No microphone was found. Check that one is connected and not used by another app.',
+    'network': 'The speech service could not be reached. Check your internet connection.',
+    'no-speech': "I didn't hear anything. Try again a little closer to the mic.",
+    'language-not-supported': 'This browser cannot recognise that language. Try English (en-IN).',
+    'aborted': 'Listening was stopped.',
+    'unsupported': 'Speech recognition is not available in this browser. Use Chrome or Edge.'
+  })[code] || ('Microphone error: ' + (code || 'unknown'));
+}
+
+function showInterim() {
+  if (!st.listening && !st.carry) { interimEl.hidden = true; interimEl.innerHTML = ''; return; }
+  interimEl.hidden = false;
+  const fin = [st.carry, st.finals].filter(Boolean).join(' ');
+  interimEl.innerHTML = (fin || st.interim)
+    ? `<span class="fin">${esc(fin)}</span> <span class="part">${esc(st.interim)}</span>`
+    : `<span class="part">Listening in ${esc(langLabel(recogLang()))}…</span>`;
+}
+
+function startListening(keepCarry = false) {
+  if (!SR) { showUnsupported(true); return; }
+  if (st.listenOnce || st.listening) return;
+  stopSpeaking();
+  if (!keepCarry) st.carry = '';
+  const sid = ++st.sid;
+  const rec = new SR();
+  rec.lang = recogLang();
+  rec.continuous = !IS_ANDROID;   // Android Chrome duplicates results in continuous mode, so we restart per phrase there
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+  Object.assign(st, { rec, finals: '', interim: '', lastError: null, fatal: false, listening: true });
+  if (!keepCarry) { st.speechT0 = null; st.speechT1 = null; }
+
+  rec.onresult = e => {
+    if (sid !== st.sid) return;
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) st.finals = (st.finals + ' ' + r[0].transcript).trim();
+      else interim += r[0].transcript;
+    }
+    st.interim = interim.trim();
+    if (!st.speechT0) st.speechT0 = Date.now();
+    st.speechT1 = Date.now();
+    st.failStreak = 0;
+    showInterim();
+    armSilence(sid);
+  };
+  rec.onerror = e => {
+    if (sid !== st.sid) return;
+    st.lastError = e.error;
+    if (['not-allowed', 'service-not-allowed', 'audio-capture', 'language-not-supported'].includes(e.error)) {
+      st.fatal = true;
+      banner('mic', esc(micErrMsg(e.error)), 'err');
+    } else if (e.error === 'network') {
+      toast(micErrMsg('network'));
+    }
+  };
+  rec.onend = () => {
+    if (sid !== st.sid) return;
+    clearTimeout(st.silenceTimer);
+    st.listening = false; st.rec = null;
+    const text = [st.carry, st.finals, st.interim].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+    st.finals = ''; st.interim = '';
+    if (st.ptt && !st.fatal) { // still holding Space: keep collecting
+      st.carry = text; refreshMic();
+      setTimeout(() => { if (st.ptt && !st.listening) startListening(true); }, 120);
+      return;
+    }
+    st.carry = ''; showInterim(); refreshMic();
+    if (text) { processText(text, rec.lang, paceOf(text)); return; }
+    if (st.fatal) { st.conv = false; refreshMic(); return; }
+    if (st.lastError && !['no-speech', 'aborted'].includes(st.lastError)) st.failStreak++;
+    if (st.conv && !st.paused) {
+      if (st.failStreak >= 3) { st.conv = false; refreshMic(); toast('Conversation stopped: the speech service keeps failing.'); return; }
+      setTimeout(resumeConversation, 300); // auto-restart after no-speech timeout
+      return;
+    }
+    if (st.lastError === 'no-speech') toast(micErrMsg('no-speech'));
+  };
+  try { rec.start(); banner('mic', ''); }
+  catch (err) { st.listening = false; st.rec = null; toast('Could not start the microphone: ' + err.message); }
+  showInterim(); refreshMic();
+}
+function paceOf(text) {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const secs = st.speechT0 && st.speechT1 ? (st.speechT1 - st.speechT0) / 1000 + 0.6 : 0;
+  if (words < 3 || secs < 0.8) return null;
+  const wps = Math.round(words / secs * 10) / 10;
+  return { wps, pace: wps >= 3.2 ? 'fast' : wps <= 1.6 ? 'slow' : 'normal' };
+}
+function armSilence(sid) {
+  clearTimeout(st.silenceTimer);
+  if (st.ptt) return;
+  st.silenceTimer = setTimeout(() => {
+    if (sid === st.sid && st.listening && (st.finals || st.interim)) finishListening();
+  }, SILENCE_MS);
+}
+function finishListening() { // stop and let onend commit the text
+  clearTimeout(st.silenceTimer);
+  if (st.rec) { try { st.rec.stop(); } catch { } }
+}
+function abortListening() { // stop and discard
+  st.sid++;
+  clearTimeout(st.silenceTimer);
+  if (st.rec) { try { st.rec.abort(); } catch { } }
+  Object.assign(st, { rec: null, listening: false, finals: '', interim: '', carry: '' });
+  showInterim(); refreshMic();
+}
+function resumeConversation() {
+  if (st.conv && !st.paused && !st.listening && !st.listenOnce && !st.translating && !st.speaking
+      && document.body.dataset.view === 'talk' && settings.mode === 'conversation') startListening();
+}
+
+/* One-shot listening in a target language (My turn / Practice) */
+function listenOnce(locale, onInterim) {
+  return new Promise(resolve => {
+    if (!SR) { resolve({ alts: [], error: 'unsupported' }); return; }
+    stopSpeaking();
+    if (st.listening) abortListening();
+    st.listenOnce = true; refreshMic();
+    const rec = new SR();
+    rec.lang = locale; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 3;
+    let finals = [], err = null, done = false;
+    const timer = setTimeout(() => { try { rec.stop(); } catch { } }, 10000);
+    rec.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finals.push([...Array(r.length).keys()].map(k => r[k].transcript.trim()).filter(Boolean));
+        else interim += r[0].transcript;
+      }
+      onInterim && onInterim(interim || finals.map(f => f[0]).join(' '));
+    };
+    rec.onerror = e => { err = e.error; if (['not-allowed', 'service-not-allowed', 'audio-capture'].includes(e.error)) banner('mic', esc(micErrMsg(e.error)), 'err'); };
+    rec.onend = () => {
+      if (done) return; done = true; clearTimeout(timer);
+      st.listenOnce = false; refreshMic();
+      let alts = [];
+      if (finals.length === 1) alts = finals[0];
+      else if (finals.length > 1) alts = [finals.map(f => f[0]).join(' ')];
+      resolve({ alts, error: alts.length ? null : (err || 'no-speech') });
+    };
+    try { rec.start(); } catch (e) { done = true; clearTimeout(timer); st.listenOnce = false; refreshMic(); resolve({ alts: [], error: e.message }); }
+  });
+}
+
+/* ---------- mic state ---------- */
+function micState() {
+  if (st.listening || st.listenOnce) return 'listening';
+  if (st.translating > 0) return 'translating';
+  if (st.speaking) return 'speaking';
+  return 'idle';
+}
+function refreshMic() {
+  const s = micState(), conv = settings.mode === 'conversation';
+  let label;
+  if (s === 'listening') label = st.listenOnce ? 'Listening for your answer…' : (conv ? 'Listening… tap to end' : 'Listening… tap to stop');
+  else if (s === 'translating') label = 'Translating…';
+  else if (s === 'speaking') label = 'Speaking…';
+  else label = conv ? (st.conv ? (st.paused ? 'Paused' : 'Waiting…') : 'Tap to start') : 'Tap to talk';
+  micBtn.dataset.state = s;
+  micStatus.textContent = label;
+  micBtn.setAttribute('aria-label', label);
+  pauseBtn.hidden = !(conv && st.conv);
+  pauseBtn.textContent = st.paused ? '▶ Resume' : '⏸ Pause';
+  pauseBtn.setAttribute('aria-pressed', String(st.paused));
+}
+
+function showUnsupported(toastToo) {
+  const missing = [];
+  if (!SR) missing.push('speech recognition');
+  if (!synth) missing.push('speech output');
+  if (missing.length) {
+    banner('support', `<b>Heads up:</b> this browser has no ${missing.join(' or ')} (common on Safari and Firefox). For the full voice experience, open this page in <b>Chrome or Edge</b>. You can still type sentences below.`);
+    if (toastToo) toast('Voice input needs Chrome or Edge. You can type instead.');
+  }
+}
+
+/* ---------- translation engine ---------- */
+const BASE_SYSTEM = 'Translate into natural spoken {LANG} for an Indian A1 learner. Keep it short and conversational. Never add extra content.';
+function buildSchema(t) {
+  const wordProps = { [t.code]: { type: 'string' }, en: { type: 'string' }, mr: { type: 'string' } };
+  const props = {
+    source_lang: { type: 'string', enum: ['mr', 'en'] },
+    source_text: { type: 'string' },
+    english_meaning: { type: 'string' },
+    [t.key]: { type: 'string' },
+    register: { type: 'string', enum: [t.informal, t.formal] },
+    tone: { type: 'string', enum: TONES },
+    pron_en: { type: 'string' },
+    pron_devanagari: { type: 'string' },
+    grammar_note: { type: 'string' },
+    words: { type: 'array', items: { type: 'object', properties: wordProps, required: Object.keys(wordProps), additionalProperties: false } }
+  };
+  return { type: 'object', properties: props, required: Object.keys(props), additionalProperties: false };
+}
+function buildSystem(t) {
+  const examples = t.code === 'es' ? `
+
+Examples (Spanish, default register tú):
+- "माझं नाव अमित आहे" -> spanish: "Me llamo Amit.", register: "tú"
+- "Where do you live?" (casual) -> spanish: "¿Dónde vives?", register: "tú"
+- "Arey Shreya, kuthe aahes tu? Lavkar ye na!" (excited) -> spanish: "¡Oye, Shreya! ¿Dónde estás? ¡Ven rápido!", register: "tú", tone: "excited"
+- "Could you please help me?" (polite) -> spanish: "¿Podría ayudarme, por favor?", register: "usted"` : t.code === 'fr' ? `
+
+Examples (French, default register tu):
+- "माझं नाव अमित आहे" -> french: "Je m'appelle Amit.", register: "tu"
+- "Where do you live?" (casual) -> french: "Tu habites où ?", register: "tu"
+- "Arey Shreya, kuthe aahes tu? Lavkar ye na!" (excited) -> french: "Hé Shreya, tu es où ? Viens vite !", register: "tu", tone: "excited"
+- "Could you please help me?" (polite) -> french: "Pourriez-vous m'aider, s'il vous plaît ?", register: "vous"` : '';
+  return BASE_SYSTEM.replace('{LANG}', t.name) + `
+
+Rules:
+- The input is one utterance from speech recognition. The speaker spoke Marathi or English (sometimes mixed, sometimes English written in Devanagari). Set source_lang to "mr" if it is mainly Marathi, otherwise "en".
+- source_text: copy the input exactly as given.
+- english_meaning: a natural English rendering of the input (if the input is English, repeat it with tidy punctuation).
+- ${t.key}: one natural spoken ${t.name} sentence with the same meaning, A1-friendly, with correct ${t.name} punctuation${t.code === 'fr' ? ' (a space before ? ! : ;)' : t.code === 'es' ? ' (opening ¿ and ¡ marks)' : ''}. Translate only what was said: no greetings, explanations, alternatives or quotation marks.
+- tone: the speaker's emotion and energy, judged from wording, interjections, punctuation, repetition and the speech pace hint if given.
+- Keep the speaker's tone and energy in the ${t.key} sentence too: keep interjections and fillers (arey/arre, are baba, hey, oh, wow, ugh → the natural ${t.name} equivalent), exclamations, repeated words and urgency. Never make it flatter, more neutral or more polite than the speaker. Use ! when the speaker is excited, urgent or calling someone.
+- Register: if the input is clearly polite or formal (please, could you, would you, sir, madam, आपण, कृपया, आपले) use "${t.formal}". If it is clearly casual (talking to a friend or family, slang, अरे, तू, तुझं) use "${t.informal}". Otherwise use the default register given in the request. Put the register you used in "register" (use the default if the sentence addresses no one).
+- pron_en: simple English-letter phonetics a beginner can read aloud; syllables joined by hyphens, words separated by spaces, stressed syllable in CAPITALS (e.g. "Buenos días" -> "BWAY-nos DEE-as").
+- pron_devanagari: the same pronunciation written in Devanagari for a Marathi reader (e.g. "Buenos días" -> "बुएनोस दीआस").
+- grammar_note: one short line (max 20 words) on the single most useful grammar or word point in this sentence.
+- words: the ${t.name} sentence split into words or short fixed chunks, in order, without punctuation, each with its English meaning ("en") and Marathi meaning in Devanagari ("mr"). The ${t.name} word goes in "${t.code}".
+- If the input is unclear, translate it as literally as possible. Never invent content that was not said.` + examples;
+}
+function buildUser(text, hint, t, extra) {
+  const reg = settings.formality === 'formal' ? t.formal : t.informal;
+  const src = hint === 'typed' ? 'typed by the user' : `speech recognition language ${hint}`;
+  const pace = extra && extra.pace ? `\nSpeech pace: ${extra.pace} (${extra.wps} words per second)` : '';
+  return `Default register: ${reg}${pace}\nInput (${src}):\n${text}`;
+}
+async function apiError(res) {
+  let msg = '';
+  try { const j = await res.json(); msg = (j.error && (j.error.message || j.error.type)) || j.message || ''; }
+  catch { try { msg = (await res.text()).slice(0, 200); } catch { } }
+  const hints = { 400: 'The API rejected the request', 401: 'The API key was rejected. Check it in Settings', 403: 'This key has no access to that model',
+    404: 'Model or endpoint not found. Check the model name and base URL', 429: 'Rate limit or quota reached. Wait a moment and retry',
+    500: 'The provider had a server error', 529: 'The API is overloaded. Retry in a moment' };
+  const extra = /workspace/i.test(msg) ? ' Tip: paste your Workspace ID in Settings.' : '';
+  return new Error(`${hints[res.status] || 'API error'} (HTTP ${res.status})${msg ? ': ' + msg : ''}${extra}`);
+}
+function parseJSONLoose(s) {
+  if (typeof s !== 'string') return s;
+  try { return JSON.parse(s); } catch { }
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch { } }
+  throw new Error('The model did not return valid JSON.');
+}
+const postJSON = (url, body, headers) => fetch(url, { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, headers), body: JSON.stringify(body) });
+
+async function callAnthropic(t, system, user, signal) {
+  const schema = buildSchema(t);
+  const res = await postJSON('https://api.anthropic.com/v1/messages', {
+    model: settings.model, max_tokens: 1200, system,
+    tools: [{ name: 'give_translation', description: 'Return the structured translation.', input_schema: schema }],
+    tool_choice: { type: 'tool', name: 'give_translation' },
+    messages: [{ role: 'user', content: user }]
+  }, Object.assign({ 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+       settings.workspaceId ? { 'anthropic-workspace-id': settings.workspaceId } : {}), signal);
+  if (!res.ok) throw await apiError(res);
+  const data = await res.json();
+  const block = (data.content || []).find(b => b.type === 'tool_use');
+  if (!block) throw new Error('The model returned no structured result.');
+  return block.input;
+}
+async function callOpenAI(t, system, user, signal) {
+  const url = (settings.baseUrl || PROVIDER_DEFAULTS.openai.baseUrl).replace(/\/+$/, '') + '/chat/completions';
+  const schema = buildSchema(t);
+  const headers = { Authorization: 'Bearer ' + settings.apiKey };
+  const body = { model: settings.model, messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+    response_format: { type: 'json_schema', json_schema: { name: 'translation', strict: true, schema } } };
+  let res = await postJSON(url, body, headers, signal);
+  if (res.status === 400) { // provider without json_schema support: fall back to JSON mode
+    const txt = await res.clone().text().catch(() => '');
+    if (/response_format|json_schema|schema/i.test(txt)) {
+      body.response_format = { type: 'json_object' };
+      body.messages[0].content = system + '\n\nReply with only a JSON object that matches this JSON Schema:\n' + JSON.stringify(schema);
+      res = await postJSON(url, body, headers, signal);
+    }
+  }
+  if (!res.ok) throw await apiError(res);
+  const data = await res.json();
+  const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!content) throw new Error('The model returned an empty answer.');
+  return parseJSONLoose(content);
+}
+function normalizeResult(obj, t) {
+  if (!obj || typeof obj !== 'object') throw new Error('Empty response from the model.');
+  const text = String(obj[t.key] ?? '').trim();
+  if (!text) throw new Error(`The response had no ${t.name} sentence.`);
+  const words = Array.isArray(obj.words) ? obj.words.map(w => ({
+    t: String((w && (w[t.code] ?? w.t ?? w.word)) ?? '').trim(), en: String((w && w.en) ?? '').trim(), mr: String((w && w.mr) ?? '').trim()
+  })).filter(w => w.t) : [];
+  return {
+    meta: { source_lang: obj.source_lang === 'mr' ? 'mr' : obj.source_lang === 'en' ? 'en' : null, english_meaning: String(obj.english_meaning ?? '').trim(), tone: TONES.includes(obj.tone) ? obj.tone : null },
+    result: { text, register: String(obj.register ?? '').trim(), pron_en: String(obj.pron_en ?? '').trim(),
+      pron_devanagari: String(obj.pron_devanagari ?? '').trim(), grammar_note: String(obj.grammar_note ?? '').trim(), words }
+  };
+}
+async function translateOne(text, hint, t, extra) {
+  if (!settings.apiKey) { const e = new Error(dlg.open ? 'Paste your API key in the box above first.' : 'No API key yet. Add one in Settings to translate.'); e.noKey = true; throw e; }
+  // Timeout via Promise.race instead of AbortSignal: some sandboxed previews proxy fetch() and cannot clone a signal.
+  let timer;
+  const timeout = new Promise((_, rej) => { timer = setTimeout(() => { const e = new Error('Translation timed out after 30 seconds.'); e.name = 'TimeoutError'; rej(e); }, 30000); });
+  try {
+    const system = buildSystem(t), user = buildUser(text, hint, t, extra);
+    const call = settings.provider === 'openai' ? callOpenAI(t, system, user) : callAnthropic(t, system, user);
+    const raw = await Promise.race([call, timeout]);
+    return normalizeResult(raw, t);
+  } catch (err) {
+    if (err.name === 'TimeoutError') throw err;
+    if (/could not be cloned|DataCloneError/i.test(err.message || '')) throw new Error('This preview window blocks the API. Download the file and open it in its own Chrome or Edge tab.');
+    if (err instanceof TypeError) throw new Error("Couldn't reach the translation API. Check your internet connection" + (settings.provider === 'openai' ? ' and the base URL.' : '.'));
+    throw err;
+  } finally { clearTimeout(timer); }
+}
+async function translateAll(text, hint, extra) {
+  const targets = enabledTargets();
+  const settled = await Promise.allSettled(targets.map(t => translateOne(text, hint, t, extra)));
+  const results = {}, errors = {};
+  let meta = null, firstErr = null;
+  settled.forEach((s, i) => {
+    const code = targets[i].code;
+    if (s.status === 'fulfilled') { results[code] = s.value.result; if (!meta || code === PRIMARY) meta = s.value.meta; }
+    else { errors[code] = s.reason.message; firstErr = firstErr || s.reason; }
+  });
+  if (!Object.keys(results).length) throw firstErr || new Error('Translation failed.');
+  return { results, errors, meta };
+}
+
+/* ---------- utterance pipeline ---------- */
+async function processText(text, hint, extra) {
+  text = String(text || '').trim();
+  if (!text) return;
+  if (st.listening) abortListening();
+  const entry = { id: uid(), ts: Date.now(), source_text: text, hint, source_lang: isDeva(text) ? 'mr' : 'en', english_meaning: '', results: {}, errors: {}, pace: extra && extra.pace ? extra.pace : null, wps: extra && extra.wps ? extra.wps : null };
+  history.push(entry); saveHistory();
+  $('#feedEmpty') && $('#feedEmpty').remove();
+  const card = renderCard(entry, { loading: true });
+  feed.append(card); scrollFeed();
+  await runTranslation(entry, card);
+}
+async function runTranslation(entry, card) {
+  st.translating++; refreshMic();
+  let ok = false;
+  try {
+    const out = await translateAll(entry.source_text, entry.hint, entry.pace ? { pace: entry.pace, wps: entry.wps } : null);
+    entry.results = out.results; entry.errors = out.errors;
+    if (out.meta) { entry.source_lang = out.meta.source_lang || entry.source_lang; entry.english_meaning = out.meta.english_meaning; entry.tone = out.meta.tone; }
+    delete entry.error; delete entry.noKey; ok = true;
+  } catch (err) {
+    entry.error = err.message; entry.noKey = !!err.noKey; entry.results = {}; // keep the original text, never invent a translation
+  } finally { st.translating--; refreshMic(); }
+  saveHistory();
+  const fresh = renderCard(entry);
+  card.replaceWith(fresh); scrollFeed();
+  if (ok && settings.autoSpeak) {
+    await speakSeq(enabledTargets().filter(t => entry.results[t.code]).map(t => ({ text: entry.results[t.code].text, code: t.code, tone: entry.tone })));
+  }
+  resumeConversation();
+}
+function scrollFeed() { requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })); }
+
+/* ---------- rendering: cards ---------- */
+function errorBox(msg, noKey) {
+  return `<div class="err" role="alert"><b>Translation failed.</b> ${esc(msg)}<br><small>Your original sentence is kept above. Nothing was invented.</small>
+    <div class="actions"><button data-act="retry">↻ Retry</button>${noKey ? '<button data-act="open-settings">⚙ Open settings</button>' : ''}</div></div>`;
+}
+function pronHTML(r) {
+  return `<div class="pron">${r.pron_en ? `<span class="pron-en">${esc(r.pron_en)}</span>` : ''}${r.pron_devanagari ? `<span class="pron-dv" lang="mr">${esc(r.pron_devanagari)}</span>` : ''}</div>`;
+}
+const isSaved = (entryId, code) => phrasebook.some(p => p.id === entryId + ':' + code);
+function targetBlock(entry, code) {
+  const r = entry.results[code], saved = isSaved(entry.id, code);
+  return `<section class="tgt" data-code="${code}" data-text="${esc(r.text)}">
+    <div class="tgt-head"><span class="lang-tag">${code.toUpperCase()}</span>${r.register ? `<span class="reg">${esc(r.register)}</span>` : ''}</div>
+    <button class="tgt-text" lang="${code}" data-act="words" aria-expanded="false" title="Tap for a word-by-word breakdown">${esc(r.text)}</button>
+    ${pronHTML(r)}
+    ${r.grammar_note ? `<p class="note">${esc(r.grammar_note)}</p>` : ''}
+    <div class="words" hidden>${r.words.length ? r.words.map(w => `<button class="chip" data-act="say-word" data-word="${esc(w.t)}"><b lang="${code}">${esc(w.t)}</b><small>${esc(w.en)}${w.mr ? ` · <span lang="mr">${esc(w.mr)}</span>` : ''}</small></button>`).join('') : '<span class="muted">No breakdown for this sentence.</span>'}</div>
+    <div class="actions">
+      <button data-act="play">▶ Replay</button>
+      <button data-act="slow">🐢 Slow</button>
+      <button data-act="x3">🔁 Repeat ×3</button>
+      <button data-act="myturn">🎤 My turn</button>
+      <button data-act="save" aria-pressed="${saved}">${saved ? '★ Saved' : '⭐ Save'}</button>
+      <button data-act="share">${shareLabel()}</button>
+      <button data-act="myvoice">🔊 Voice note</button>
+    </div>
+    <div class="score" hidden></div>
+  </section>`;
+}
+function renderCard(entry, opts = {}) {
+  const el = document.createElement('article');
+  el.className = 'card'; el.dataset.id = entry.id;
+  const mr = entry.source_lang === 'mr';
+  let html = `<div class="src"><div class="src-meta"><span class="badge">${mr ? '<span lang="mr">मराठी</span>' : 'English'}</span><span>${entry.tone ? `<span class="badge" title="Your tone">${TONE_EMOJI[entry.tone] || ''} ${esc(entry.tone)}${entry.pace && entry.pace !== 'normal' ? ' · ' + esc(entry.pace) : ''}</span> ` : ''}<time>${fmtTime(entry.ts)}</time></span></div>
+    <p class="src-text" lang="${mr ? 'mr' : 'en'}">${esc(entry.source_text)}</p>
+    ${mr && entry.english_meaning ? `<p class="src-en">${esc(entry.english_meaning)}</p>` : ''}</div>`;
+  const codes = TARGETS.map(t => t.code);
+  if (opts.loading) html += `<div class="loading"><span class="dots"><i></i><i></i><i></i></span> Translating…</div>`;
+  else if (entry.error) html += errorBox(entry.error, entry.noKey);
+  else if (!entry.results || !Object.keys(entry.results).length) html += errorBox('This sentence was not translated (the page was closed or reloaded mid-way).');
+  else codes.forEach(c => {
+    if (entry.results[c]) html += targetBlock(entry, c);
+    else if (entry.errors && entry.errors[c]) html += errorBox(`${T(c).name}: ${entry.errors[c]}`);
+  });
+  el.innerHTML = html;
+  return el;
+}
+function renderFeed() {
+  feed.innerHTML = '';
+  const recent = history.slice(-40);
+  if (!recent.length) {
+    feed.innerHTML = `<div class="empty" id="feedEmpty"><p class="big">¡Hola, Amit!</p>
+      <p>Tap the mic and say anything in Marathi or English. You'll hear it in Spanish straight away.</p>
+      <p class="muted">Or try one of these:</p>
+      <div class="samples">
+        <button class="btn" data-act="sample" data-sample="माझं नाव अमित आहे" lang="mr">माझं नाव अमित आहे</button>
+        <button class="btn" data-act="sample" data-sample="Hey, where do you live?">Hey, where do you live?</button>
+        <button class="btn" data-act="sample" data-sample="Could you please help me?">Could you please help me?</button>
+      </div></div>`;
+    return;
+  }
+  recent.forEach(e => feed.append(renderCard(e)));
+}
+
+/* ---------- pronunciation scoring ---------- */
+function normWords(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[’'`´-]/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
+}
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+const similar = (a, b) => a === b || (Math.max(a.length, b.length) > 3 && 1 - lev(a, b) / Math.max(a.length, b.length) >= 0.75);
+function scoreAttempt(target, spoken) {
+  const disp = target.split(/\s+/).filter(Boolean).map(w => ({ w, toks: normWords(w), miss: false }));
+  const tt = []; disp.forEach((d, di) => d.toks.forEach(tok => tt.push({ tok, di, hit: false })));
+  const sp = normWords(spoken);
+  const n = tt.length, m = sp.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = similar(tt[i].tok, sp[j]) ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (similar(tt[i].tok, sp[j]) && dp[i][j] === dp[i + 1][j + 1] + 1) { tt[i].hit = true; i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+  }
+  const matched = tt.filter(x => x.hit).length;
+  tt.forEach(x => { if (!x.hit) disp[x.di].miss = true; });
+  const score = n + m ? Math.round(100 * 2 * matched / (n + m)) : 0;
+  return { score, disp, spoken, missed: disp.filter(d => d.miss).map(d => d.w) };
+}
+function bestAttempt(target, alts) {
+  return alts.map(a => scoreAttempt(target, a)).sort((a, b) => b.score - a.score)[0];
+}
+function renderScore(res, code) {
+  const t = T(code);
+  const cls = res.score >= 80 ? 's-good' : res.score >= 50 ? 's-mid' : 's-low';
+  const msg = res.score >= 95 ? t.praise[0] : res.score >= 75 ? t.praise[1] : res.score >= 45 ? t.praise[2] : t.praise[3];
+  const words = res.disp.map(d => d.miss ? `<mark class="miss" title="missed">${esc(d.w)}</mark>` : `<span class="ok">${esc(d.w)}</span>`).join(' ');
+  return `<div class="score-top"><span class="score-num ${cls}">${res.score}</span><div class="bar ${cls}"><i style="width:${res.score}%"></i></div><span class="score-msg">${esc(msg)}</span></div>
+    <p class="score-words" lang="${code}">${words}</p>
+    <p class="heard">You said: “${esc(res.spoken)}”${res.missed.length ? ` · missed: ${res.missed.map(esc).join(', ')}` : ''}</p>`;
+}
+async function doMyTurn(text, code, scoreEl, btn) {
+  if (!SR) { showUnsupported(true); return null; }
+  if (st.listenOnce) return null;
+  btn && btn.classList.add('rec');
+  scoreEl.hidden = false;
+  scoreEl.innerHTML = `<p class="score-listen"><span class="pulse-dot"></span> Listening in ${T(code).name}… say: <b lang="${code}">${esc(text)}</b></p><p class="heard"></p>`;
+  const heard = scoreEl.querySelector('.heard');
+  const res = await listenOnce(T(code).locale, s => { heard.textContent = s ? `Hearing: “${s}”` : ''; });
+  btn && btn.classList.remove('rec');
+  let best = null;
+  if (!res.alts.length) scoreEl.innerHTML = `<p class="score-listen">${esc(micErrMsg(res.error))}</p>`;
+  else { best = bestAttempt(text, res.alts); scoreEl.innerHTML = renderScore(best, code); }
+  resumeConversation();
+  return best;
+}
+
+/* ---------- phrasebook ---------- */
+function toggleSave(entryId, code) {
+  const id = entryId + ':' + code, idx = phrasebook.findIndex(p => p.id === id);
+  if (idx >= 0) { phrasebook.splice(idx, 1); toast('Removed from phrasebook'); }
+  else {
+    const e = history.find(h => h.id === entryId); if (!e || !e.results[code]) return;
+    const r = e.results[code];
+    phrasebook.push({ id, entryId, code, tone: e.tone || null, source_lang: e.source_lang, source_text: e.source_text, english_meaning: e.english_meaning,
+      text: r.text, register: r.register, pron_en: r.pron_en, pron_devanagari: r.pron_devanagari, grammar_note: r.grammar_note, words: r.words, savedAt: Date.now() });
+    toast('Saved to phrasebook ⭐');
+  }
+  savePhrasebook(); syncSaveButtons(entryId, code);
+}
+function syncSaveButtons(entryId, code) {
+  const b = $(`.card[data-id="${entryId}"] .tgt[data-code="${code}"] [data-act="save"]`);
+  if (b) { const s = isSaved(entryId, code); b.setAttribute('aria-pressed', String(s)); b.textContent = s ? '★ Saved' : '⭐ Save'; }
+}
+function renderPhrasebook() {
+  $('#pbCount').textContent = phrasebook.length;
+  const list = $('#pbList');
+  if (!phrasebook.length) { list.innerHTML = `<div class="empty"><p class="big">Nothing saved yet</p><p>Tap <b>⭐ Save</b> on any card in Talk.</p></div>`; return; }
+  list.innerHTML = phrasebook.slice().reverse().map(p => `<div class="item" data-text="${esc(p.text)}" data-code="${p.code}" data-pid="${esc(p.id)}">
+      <div class="item-main"><p class="item-tgt" lang="${p.code}">${esc(p.text)}</p>
+        <p class="item-src"><span ${p.source_lang === 'mr' ? 'lang="mr"' : ''}>${esc(p.source_text)}</span>${p.source_lang === 'mr' && p.english_meaning ? ` · ${esc(p.english_meaning)}` : ''}</p>
+        ${pronHTML(p)}</div>
+      <div class="item-actions"><button data-act="play" aria-label="Play">▶</button><button data-act="slow" aria-label="Play slowly">🐢</button><button data-act="share" aria-label="Share">📤</button><button data-act="myvoice" aria-label="Make a shareable voice note">🔊</button><button data-act="pb-del" aria-label="Delete">🗑</button></div>
+    </div>`).join('');
+}
+function exportCSV() {
+  if (!phrasebook.length) { toast('Your phrasebook is empty.'); return; }
+  const mixed = phrasebook.some(p => p.code !== PRIMARY);
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const rows = [['Marathi', 'English', mixed ? 'Phrase' : T(PRIMARY).name, 'Pronunciation'].concat(mixed ? ['Language'] : [])];
+  phrasebook.forEach(p => {
+    const row = [p.source_lang === 'mr' ? p.source_text : '', p.english_meaning || (p.source_lang === 'en' ? p.source_text : ''), p.text,
+      [p.pron_en, p.pron_devanagari].filter(Boolean).join(' / ')];
+    if (mixed) row.push(T(p.code).name);
+    rows.push(row);
+  });
+  const csv = '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `parallel-spanish-phrasebook-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('Phrasebook exported as CSV');
+}
+
+/* ---------- sharing (WhatsApp etc.) ---------- */
+function shareMessage(b, text, code) {
+  let src = '', en = '', r = null;
+  const card = b.closest('.card[data-id]');
+  if (card) { const e = history.find(h => h.id === card.dataset.id); if (e) { src = e.source_text; en = e.source_lang === 'mr' ? e.english_meaning : ''; r = e.results[code]; } }
+  const pbItem = b.closest('[data-pid]');
+  if (pbItem) { const p = phrasebook.find(x => x.id === pbItem.dataset.pid); if (p) { src = p.source_text; en = p.source_lang === 'mr' ? p.english_meaning : ''; r = p; } }
+  const lines = [`${T(code).name}: ${text}`];
+  if (r && r.pron_en) lines.push(`Say it: ${r.pron_en}${settings.showDeva && r.pron_devanagari ? ' / ' + r.pron_devanagari : ''}`);
+  if (src) lines.push(`(${src}${en ? ' · ' + en : ''})`);
+  return lines.join('\n');
+}
+async function shareText(msg) {
+  if (navigator.share) {
+    try { await navigator.share({ text: msg }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(msg); } catch { }
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  toast('Copied. Opening WhatsApp…');
+}
+
+/* ---------- shareable audio via ElevenLabs ready-made voices ---------- */
+let elVoices = [];
+async function loadElVoices() {
+  if (!settings.elKey) throw new Error('Paste your ElevenLabs API key first.');
+  let res;
+  try { res = await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': settings.elKey } }); }
+  catch { throw new Error("Couldn't reach ElevenLabs. Check your internet connection."); }
+  if (!res.ok) throw new Error(res.status === 401 ? 'ElevenLabs rejected the API key (HTTP 401). Check it, and that it may read voices.' : `ElevenLabs error (HTTP ${res.status})`);
+  const data = await res.json();
+  const rank = v => v.category === 'cloned' || v.category === 'professional' ? 0 : v.category === 'premade' ? 1 : 2;
+  elVoices = (data.voices || []).map(v => ({ id: v.voice_id, name: v.name, category: v.category, desc: [v.labels && v.labels.gender, v.labels && v.labels.accent].filter(Boolean).join(', ') }))
+    .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  if (!elVoices.length) throw new Error('No voices found on this ElevenLabs account.');
+  if (!settings.elVoiceId || !elVoices.some(v => v.id === settings.elVoiceId)) { settings.elVoiceId = elVoices[0].id; settings.elVoiceName = elVoices[0].name; saveSettings(); }
+  fillVoiceSelect(elVoices);
+  return elVoices;
+}
+function fillVoiceSelect(list) {
+  const sel = $('#sElVoice'); if (!sel) return;
+  if (!list.length) {
+    sel.innerHTML = settings.elVoiceId ? `<option value="${esc(settings.elVoiceId)}" data-name="${esc(settings.elVoiceName || '')}">${esc(settings.elVoiceName || 'Saved voice')}</option>` : '<option value="">Add the key, then tap Load voices</option>';
+    return;
+  }
+  sel.innerHTML = list.map(v => `<option value="${esc(v.id)}" data-name="${esc(v.name)}" ${v.id === settings.elVoiceId ? 'selected' : ''}>${v.category === 'cloned' || v.category === 'professional' ? '★ ' : ''}${esc(v.name)}${v.category === 'cloned' || v.category === 'professional' ? ' · your cloned voice' : (v.desc ? ' · ' + esc(v.desc) : '')}</option>`).join('');
+}
+const voiceCache = new Map(); // text -> Blob, so replays don't use credits again
+const voicePanelFiles = new WeakMap();
+async function myVoiceAudio(text, tone) {
+  if (!settings.elKey) { const e = new Error('To share audio, add a free ElevenLabs API key in Settings first.'); e.setup = true; throw e; }
+  if (!settings.elVoiceId) await loadElVoices();
+  const ck = settings.elVoiceId + '|' + (settings.elModel || '') + '|' + (tone || '') + '|' + text;
+  const tv = TONE_VOICE[tone] || [0.5, 0.2];
+  if (voiceCache.has(ck)) return voiceCache.get(ck);
+  let res;
+  try {
+    res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(settings.elVoiceId)}?output_format=mp3_44100_128`, {
+      method: 'POST',
+      headers: { 'xi-api-key': settings.elKey, 'content-type': 'application/json', accept: 'audio/mpeg' },
+      body: JSON.stringify({ text, model_id: settings.elModel || 'eleven_multilingual_v2', voice_settings: { stability: tv[0], similarity_boost: 0.85, style: tv[1], use_speaker_boost: true } })
+    });
+  } catch { throw new Error("Couldn't reach ElevenLabs. Check your internet connection."); }
+  if (!res.ok) {
+    let msg = ''; try { const j = await res.json(); msg = (j.detail && (j.detail.message || j.detail.status || (typeof j.detail === 'string' ? j.detail : ''))) || j.message || ''; } catch { }
+    const hint = { 401: 'ElevenLabs rejected the API key', 402: 'Your ElevenLabs plan or credits do not cover this voice. Pick another voice in Settings', 404: 'That voice is no longer available. Pick another in Settings', 422: 'ElevenLabs could not use these settings', 429: 'ElevenLabs is busy or your quota is used up' }[res.status] || 'ElevenLabs error';
+    throw new Error(`${hint} (HTTP ${res.status})${msg ? ': ' + msg : ''}`);
+  }
+  const blob = await res.blob();
+  if (!blob.size) throw new Error('ElevenLabs returned empty audio.');
+  voiceCache.set(ck, blob);
+  return blob;
+}
+async function playMyVoice(box, text, code, tone, opts = {}) {
+  let panel = box.querySelector(':scope > .voice-panel');
+  if (!panel) { panel = document.createElement('div'); panel.className = 'score voice-panel'; box.append(panel); }
+  panel.hidden = false;
+  panel.innerHTML = '<p class="vrow"><span class="dots"><i></i><i></i><i></i></span> Making the voice note…</p>';
+  stopSpeaking();
+  if (st.listening) { if (st.conv) st.paused = true; abortListening(); }
+  try {
+    const blob = await myVoiceAudio(text, tone);
+    const file = new File([blob], `${T(code).name.toLowerCase()}-${slugify(text)}.mp3`, { type: 'audio/mpeg' });
+    voicePanelFiles.set(panel, file);
+    panel.innerHTML = `<p class="vrow">🔊 Voice note${settings.elVoiceName ? ' (' + esc(settings.elVoiceName) + ')' : ''} · <b lang="${code}">${esc(text)}</b></p>
+      <audio controls ${opts.autoplay === false ? '' : 'autoplay'} src="${URL.createObjectURL(blob)}"></audio>
+      <div class="actions"><button class="btn primary" data-act="voice-share">📤 Share voice note</button><button data-act="voice-close">✕ Close</button></div>`;
+    return file;
+  } catch (err) {
+    if (opts.throwOnError) { panel.hidden = true; panel.innerHTML = ''; throw err; }
+    panel.innerHTML = `<p class="vrow">${esc(err.message)}</p>${err.setup ? '<div class="actions"><button data-act="open-settings">⚙ Open settings</button><button data-act="voice-close">✕ Close</button></div>' : '<div class="actions"><button data-act="voice-close">✕ Close</button></div>'}`;
+  }
+}
+function slugify(t) { return (t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)) || 'phrase'; }
+async function shareFile(file, msg, opts = {}) {
+  if (navigator.canShare && navigator.share) {
+    let ok = false; try { ok = navigator.canShare({ files: [file] }); } catch { }
+    if (ok) {
+      try { await navigator.share({ files: [file], text: msg }); return 'shared'; }
+      catch (e) {
+        if (e && e.name === 'AbortError') return 'cancelled';
+        if (e && e.name === 'NotAllowedError' && opts.blockedOk) return 'blocked';
+        try { await navigator.share({ files: [file] }); return 'shared'; } catch (e2) { if (e2 && e2.name === 'AbortError') return 'cancelled'; if (e2 && e2.name === 'NotAllowedError' && opts.blockedOk) return 'blocked'; }
+      }
+    }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Saved to Downloads. In WhatsApp, attach it with 📎 → Audio or Document.', 5000);
+  return 'downloaded';
+}
+function shareLabel() { return settings.elKey ? '📤 Share in my voice' : '📤 Share'; }
+async function shareInMyVoice(b, box, text, code, tone) {
+  const msg = shareMessage(b, text, code);
+  if (!settings.elKey) { shareText(msg); return; }
+  b.disabled = true; const old = b.textContent; b.textContent = '⏳ Preparing…';
+  try {
+    const file = await playMyVoice(box, text, code, tone, { autoplay: false, throwOnError: true });
+    const res = await shareFile(file, msg, { blockedOk: true });
+    if (res === 'blocked') toast('Voice note ready. Tap 📤 Share voice note below to send it.', 4500);
+  } catch (err) {
+    toast(err.message + ' Sharing the text instead.', 4500);
+    shareText(msg);
+  } finally { b.disabled = false; b.textContent = old; }
+}
+
+/* ---------- practice mode ---------- */
+const pr = { queue: [], cur: null, revealed: false, n: 0, sum: 0 };
+function nextPractice() {
+  if (!phrasebook.length) { pr.cur = null; renderPractice(); return; }
+  for (let guard = 0; guard < 3; guard++) {
+    if (!pr.queue.length) pr.queue = shuffle(phrasebook.map(p => p.id));
+    let id = pr.queue.shift();
+    if (pr.cur && id === pr.cur.id && phrasebook.length > 1) { pr.queue.push(id); id = pr.queue.shift(); }
+    const p = phrasebook.find(x => x.id === id);
+    if (p) { pr.cur = p; pr.revealed = false; renderPractice(); return; }
+  }
+  pr.queue = []; pr.cur = phrasebook[0]; pr.revealed = false; renderPractice();
+}
+function renderPractice() {
+  const body = $('#prBody');
+  $('#prInfo').textContent = phrasebook.length ? `${phrasebook.length} saved` : '';
+  if (!phrasebook.length) {
+    body.innerHTML = `<div class="panel empty"><p class="big">No saved phrases yet</p><p>Tap <b>⭐ Save</b> on any card in Talk, then come back here to practise.</p><button class="btn primary" data-act="goto" data-view="talk">Go to Talk</button></div>`;
+    return;
+  }
+  if (!pr.cur || !phrasebook.some(p => p.id === pr.cur.id)) { nextPractice(); return; }
+  const p = pr.cur, t = T(p.code), mr = p.source_lang === 'mr';
+  body.innerHTML = `<div class="panel pr-card" data-text="${esc(p.text)}" data-code="${p.code}">
+      <p class="eyebrow">Say this in ${t.name}</p>
+      <p class="pr-src" ${mr ? 'lang="mr"' : ''}>${esc(p.source_text)}</p>
+      ${mr && p.english_meaning ? `<p class="src-en">${esc(p.english_meaning)}</p>` : ''}
+      <div class="pr-answer" ${pr.revealed ? '' : 'hidden'}>
+        <p class="tgt-text static" lang="${p.code}">${esc(p.text)}</p>${pronHTML(p)}
+        ${p.grammar_note ? `<p class="note">${esc(p.grammar_note)}</p>` : ''}</div>
+      <div class="score" hidden></div>
+      <div class="actions"><button class="btn primary" data-act="pr-say">🎤 Say it</button><button data-act="pr-reveal">👁 Reveal</button>
+        <button data-act="play">▶ Hear it</button><button data-act="pr-next">Next →</button></div>
+    </div>
+    <p class="pr-stats">${pr.n ? `This session: ${pr.n} attempt${pr.n > 1 ? 's' : ''} · average ${Math.round(pr.sum / pr.n)}/100` : 'Tip: try first, then reveal.'}</p>`;
+}
+function revealPractice() {
+  pr.revealed = true;
+  const a = $('#prBody .pr-answer'); if (a) a.hidden = false;
+}
+
+/* ---------- daily recap & quiz ---------- */
+const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const wordKey = s => normWords(s).join(' ');
+function eachWord(h, fn) { Object.entries(h.results || {}).forEach(([code, r]) => (r.words || []).forEach(w => fn(w, code))); }
+function recapData() {
+  const t0 = startOfToday();
+  const today = history.filter(h => h.ts >= t0 && h.results && Object.keys(h.results).length);
+  const seen = new Set();
+  history.filter(h => h.ts < t0).forEach(h => eachWord(h, (w, code) => seen.add(code + ':' + wordKey(w.t))));
+  const counts = new Map();
+  today.forEach(h => eachWord(h, (w, code) => {
+    const k = code + ':' + wordKey(w.t);
+    if (!wordKey(w.t) || seen.has(k)) return;
+    const c = counts.get(k);
+    if (c) c.n++; else counts.set(k, { t: w.t, en: w.en, mr: w.mr, code, n: 1, order: counts.size });
+  }));
+  const top = [...counts.values()].sort((a, b) => b.n - a.n || a.order - b.order).slice(0, 5);
+  return { today, top };
+}
+let recapTop = [];
+function renderRecap() {
+  const { today, top } = recapData();
+  recapTop = top;
+  const date = new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+  const phrases = [];
+  today.forEach(h => TARGETS.forEach(t => { if (h.results[t.code]) phrases.push({ h, code: t.code, r: h.results[t.code] }); }));
+  $('#recapBody').innerHTML = `
+    <div class="panel"><h2>Daily recap</h2><p class="muted" style="margin:4px 0 0">${esc(date)} · ${today.length} sentence${today.length === 1 ? '' : 's'} today</p></div>
+    <div class="panel"><div class="row"><h3>Top 5 new words</h3>${top.length >= 2 ? '<button class="btn primary" data-act="quiz-start">🧠 Quiz me</button>' : ''}</div>
+      ${top.length ? `<div class="word-grid">${top.map(w => `<span data-text="${esc(w.t)}" data-code="${w.code}"><button class="chip" data-act="play"><b lang="${w.code}">${esc(w.t)}</b><small>${esc(w.en)}${w.mr ? ` · <span lang="mr">${esc(w.mr)}</span>` : ''}${w.n > 1 ? ` · ×${w.n}` : ''}</small></button></span>`).join('')}</div>`
+        : '<p class="muted">No new words yet today. Say a few sentences in Talk first.</p>'}
+      ${top.length === 1 ? '<p class="muted">Learn one more new word to unlock the quiz.</p>' : ''}
+      <div id="quizBox" class="quiz"></div></div>
+    <div class="panel"><h3>Today's phrases</h3>
+      ${phrases.length ? `<div class="list">${phrases.map(({ h, code, r }) => `<div class="item" data-text="${esc(r.text)}" data-code="${code}">
+          <div class="item-main"><p class="item-tgt" lang="${code}">${esc(r.text)}</p><p class="item-src"><span ${h.source_lang === 'mr' ? 'lang="mr"' : ''}>${esc(h.source_text)}</span> · ${fmtTime(h.ts)}</p>${pronHTML(r)}</div>
+          <div class="item-actions"><button data-act="play" aria-label="Play">▶</button><button data-act="slow" aria-label="Play slowly">🐢</button></div></div>`).join('')}</div>`
+        : '<p class="muted">Nothing yet today.</p>'}</div>`;
+}
+const qz = { qs: [], i: 0, right: 0, answered: false };
+function distractors(w) {
+  const pool = new Map();
+  history.forEach(h => eachWord(h, (x, code) => { if (code === w.code) pool.set(wordKey(x.t), x.t); }));
+  T(w.code).filler.forEach(f => { if (!pool.has(wordKey(f))) pool.set(wordKey(f), f); });
+  pool.delete(wordKey(w.t));
+  return shuffle([...pool.values()]).slice(0, 3);
+}
+function startQuiz() {
+  qz.qs = shuffle(recapTop).map(w => ({ w, options: shuffle([w.t, ...distractors(w)]) }));
+  qz.i = 0; qz.right = 0; qz.answered = false; renderQuiz();
+}
+function renderQuiz() {
+  const box = $('#quizBox'); if (!box) return;
+  if (qz.i >= qz.qs.length) {
+    box.innerHTML = `<p class="quiz-q"><b>You got ${qz.right} / ${qz.qs.length}.</b> ${qz.right === qz.qs.length ? 'Parfait ! 🎉' : 'Bien joué ! Try again to lock them in.'}</p><button class="btn primary" data-act="quiz-start">↻ Quiz again</button>`;
+    return;
+  }
+  const { w, options } = qz.qs[qz.i];
+  box.innerHTML = `<p class="muted" style="margin:0 0 4px">Question ${qz.i + 1} of ${qz.qs.length}</p>
+    <p class="quiz-q">Which ${T(w.code).name} word means “<b>${esc(w.en)}</b>”${w.mr ? ` · <span lang="mr">${esc(w.mr)}</span>` : ''}?</p>
+    <div class="quiz-opts">${options.map(o => `<button data-act="quiz-ans" data-opt="${esc(o)}" lang="${w.code}">${esc(o)}</button>`).join('')}</div>
+    <div class="actions" id="quizNext" hidden><button class="btn navy" data-act="quiz-next">Next →</button></div>`;
+  qz.answered = false;
+}
+function answerQuiz(btn) {
+  if (qz.answered) return;
+  qz.answered = true;
+  const { w } = qz.qs[qz.i], ok = btn.dataset.opt === w.t;
+  if (ok) qz.right++;
+  $$('#quizBox [data-act="quiz-ans"]').forEach(b => { b.disabled = true; if (b.dataset.opt === w.t) b.classList.add('right'); });
+  if (!ok) btn.classList.add('wrong');
+  speakSeq([{ text: w.t, code: w.code }]);
+  $('#quizNext').hidden = false;
+}
+
+/* ---------- settings ---------- */
+function applyTheme() {
+  const dark = settings.dark == null ? matchMedia('(prefers-color-scheme: dark)').matches : settings.dark;
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  $('#darkBtn').textContent = dark ? '☀' : '☾';
+  $('meta[name="theme-color"]').content = dark ? '#0d1330' : '#1f2d5a';
+}
+function applySettings() {
+  applyTheme();
+  document.body.classList.toggle('hide-deva', !settings.showDeva);
+  $$('#langSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === settings.inputLang)));
+  $$('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === settings.mode)));
+  refreshMic();
+}
+function renderVoiceSettings() {
+  const box = $('#sVoices'); if (!box) return;
+  box.innerHTML = enabledTargets().map(t => {
+    const list = voicesFor(t.locale), want = settings.voices[t.code] || '';
+    return `<label class="field"><span>${t.name} voice</span><div class="inline">
+        <select data-voice="${t.code}"><option value="">Auto: best available${list[0] ? ` (${esc(list[0].name)})` : ''}</option>
+        ${list.map(v => `<option value="${esc(v.voiceURI)}" ${v.voiceURI === want || v.name === want ? 'selected' : ''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('')}</select>
+        <button class="btn" type="button" data-act="test-voice" data-code="${t.code}">▶ Test</button></div>
+        ${list.length ? '' : `<small>No ${t.name} voices found on this device yet. Install one in your system's text-to-speech settings; the browser default will be used meanwhile.</small>`}</label>`;
+  }).join('');
+}
+function fillSettingsForm() {
+  $('#sProvider').value = settings.provider;
+  $('#sKey').value = settings.apiKey;
+  $('#sModel').value = settings.model;
+  $('#sBaseUrl').value = settings.baseUrl;
+  $('#sBaseRow').hidden = settings.provider !== 'openai';
+  $('#sWsRow').hidden = settings.provider !== 'anthropic';
+  $('#sWorkspace').value = settings.workspaceId || '';
+  $('#sElKey').value = settings.elKey || '';
+  fillVoiceSelect(elVoices);
+  $('#sElModel').value = settings.elModel || 'eleven_multilingual_v2';
+  $('#sInputLang').value = settings.inputLang;
+  $('#sRate').value = settings.rate; $('#sRateOut').textContent = Number(settings.rate).toFixed(2);
+  $('#sAutoSpeak').checked = settings.autoSpeak;
+  $('#sShowDeva').checked = settings.showDeva;
+  $('#sFormality').value = settings.formality;
+  $('#sTargets').innerHTML = TARGETS.map(t => `<label class="check"><input type="checkbox" data-target="${t.code}" ${settings.targets.includes(t.code) ? 'checked' : ''} ${t.code === PRIMARY ? 'disabled' : ''}> ${t.name}${t.code === PRIMARY ? ' (always on)' : ''}</label>`).join('');
+  renderVoiceSettings();
+}
+function openSettings() { fillSettingsForm(); $('#sTestOut').textContent = ''; dlg.showModal(); }
+function bindSettings() {
+  const upd = (k, v) => { settings[k] = v; saveSettings(); applySettings(); };
+  $('#sProvider').addEventListener('change', e => {
+    const prev = settings.provider; settings.provider = e.target.value;
+    if (!settings.model || settings.model === PROVIDER_DEFAULTS[prev].model) settings.model = PROVIDER_DEFAULTS[settings.provider].model;
+    saveSettings(); fillSettingsForm();
+  });
+  $('#sKey').addEventListener('input', e => upd('apiKey', e.target.value.trim()));
+  $('#sKeyShow').addEventListener('click', e => { const i = $('#sKey'); i.type = i.type === 'password' ? 'text' : 'password'; e.target.textContent = i.type === 'password' ? 'Show' : 'Hide'; });
+  $('#sModel').addEventListener('input', e => upd('model', e.target.value.trim()));
+  $('#sBaseUrl').addEventListener('input', e => upd('baseUrl', e.target.value.trim()));
+  $('#sWorkspace').addEventListener('input', e => upd('workspaceId', e.target.value.trim()));
+  $('#sElKey').addEventListener('input', e => { upd('elKey', e.target.value.trim()); voiceCache.clear(); $$('.tgt [data-act="share"]').forEach(x => { x.textContent = shareLabel(); }); });
+  $('#sElVoice').addEventListener('change', e => { const o = e.target.selectedOptions[0]; settings.elVoiceName = o ? o.dataset.name || '' : ''; upd('elVoiceId', e.target.value); voiceCache.clear(); });
+  $('#sElLoad').addEventListener('click', async () => {
+    const out = $('#sElOut'); out.textContent = 'Loading voices…';
+    try { await loadElVoices(); out.textContent = `✅ ${elVoices.length} voices loaded. Pick one, then tap Test.`; }
+    catch (err) { out.textContent = '❌ ' + err.message; }
+  });
+  $('#sElModel').addEventListener('input', e => { upd('elModel', e.target.value.trim()); voiceCache.clear(); });
+  $('#sElKeyShow').addEventListener('click', e => { const i = $('#sElKey'); i.type = i.type === 'password' ? 'text' : 'password'; e.target.textContent = i.type === 'password' ? 'Show' : 'Hide'; });
+  $('#sElTest').addEventListener('click', async () => {
+    const out = $('#sElOut'); out.textContent = 'Generating…';
+    try { const blob = await myVoiceAudio('¡Hola! Me llamo Amit.', 'happy'); out.innerHTML = '✅ Voice note audio works.'; const a = new Audio(URL.createObjectURL(blob)); a.play().catch(() => { }); }
+    catch (err) { out.textContent = '❌ ' + err.message; }
+  });
+  $('#sInputLang').addEventListener('change', e => upd('inputLang', e.target.value));
+  $('#sRate').addEventListener('input', e => { $('#sRateOut').textContent = Number(e.target.value).toFixed(2); upd('rate', Number(e.target.value)); });
+  $('#sAutoSpeak').addEventListener('change', e => upd('autoSpeak', e.target.checked));
+  $('#sShowDeva').addEventListener('change', e => upd('showDeva', e.target.checked));
+  $('#sFormality').addEventListener('change', e => upd('formality', e.target.value));
+  $('#sTargets').addEventListener('change', e => {
+    const code = e.target.dataset.target; if (!code) return;
+    const set = new Set(settings.targets); e.target.checked ? set.add(code) : set.delete(code); set.add(PRIMARY);
+    settings.targets = TARGETS.map(t => t.code).filter(c => set.has(c)); saveSettings(); renderVoiceSettings();
+  });
+  $('#sVoices').addEventListener('change', e => { const c = e.target.dataset.voice; if (c) { settings.voices[c] = e.target.value; saveSettings(); } });
+  $('#sTest').addEventListener('click', async () => {
+    const out = $('#sTestOut'); out.textContent = 'Testing…';
+    try { const r = await translateOne('माझं नाव अमित आहे', 'typed', T(PRIMARY)); out.innerHTML = `✅ <b lang="es">${esc(r.result.text)}</b> <span class="muted">(${esc(r.result.pron_en)})</span>`; speakSeq([{ text: r.result.text, code: PRIMARY }]); }
+    catch (err) { out.textContent = '❌ ' + err.message; }
+  });
+  $('#sClearHistory').addEventListener('click', () => { if (confirm('Clear all translation history? Saved phrases stay.')) { history = []; saveHistory(); renderFeed(); toast('History cleared'); } });
+  $('#sClearPb').addEventListener('click', () => { if (confirm('Delete every saved phrase?')) { phrasebook = []; savePhrasebook(); renderFeed(); renderPhrasebook(); toast('Phrasebook cleared'); } });
+  $('#closeSettings').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+}
+
+/* ---------- views ---------- */
+function showView(v) {
+  document.body.dataset.view = v;
+  $$('.view').forEach(s => { s.hidden = s.id !== 'view-' + v; });
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+  if (v !== 'talk' && st.listening) { if (st.conv) st.paused = true; abortListening(); }
+  if (v === 'practice') renderPractice();
+  if (v === 'phrasebook') renderPhrasebook();
+  if (v === 'recap') renderRecap();
+  refreshMic();
+  window.scrollTo({ top: v === 'talk' ? document.documentElement.scrollHeight : 0 });
+}
+
+/* ---------- events ---------- */
+micBtn.addEventListener('click', () => {
+  if (!SR) { showUnsupported(true); return; }
+  if (st.listenOnce) return;
+  if (settings.mode === 'conversation') {
+    if (!st.conv) { st.conv = true; st.paused = false; st.failStreak = 0; if (!st.translating) startListening(); }
+    else { st.conv = false; st.paused = false; if (st.listening) finishListening(); }
+    refreshMic();
+  } else {
+    if (st.listening) finishListening(); else startListening();
+  }
+});
+pauseBtn.addEventListener('click', () => {
+  if (!st.conv) return;
+  st.paused = !st.paused;
+  if (st.paused) { if (st.listening) finishListening(); } else resumeConversation();
+  refreshMic();
+});
+$('#langSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-lang]'); if (!b) return;
+  settings.inputLang = b.dataset.lang; saveSettings(); applySettings();
+  if (st.listening) { abortListening(); startListening(); }
+});
+$('#modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b || b.dataset.mode === settings.mode) return;
+  settings.mode = b.dataset.mode; saveSettings();
+  if (settings.mode === 'tap' && st.conv) { st.conv = false; st.paused = false; if (st.listening) finishListening(); }
+  applySettings();
+  toast(settings.mode === 'conversation' ? 'Conversation mode: tap the mic once, then just keep talking.' : 'Tap mode: one sentence per tap.');
+});
+$('#typeForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const i = $('#typeInput'), v = i.value.trim(); if (!v) return;
+  i.value = ''; processText(v, 'typed');
+});
+$$('.tab').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+$('#settingsBtn').addEventListener('click', openSettings);
+$('#darkBtn').addEventListener('click', () => { settings.dark = document.documentElement.dataset.theme !== 'dark'; saveSettings(); applyTheme(); });
+
+/* hold-to-talk with the spacebar */
+const isTypingTarget = el => el && el.closest && el.closest('input,textarea,select,[contenteditable="true"]');
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space' || isTypingTarget(e.target) || dlg.open || document.body.dataset.view !== 'talk') return;
+  e.preventDefault();
+  if (e.repeat || st.ptt) return;
+  if (!SR) { showUnsupported(true); return; }
+  if (st.listenOnce) return;
+  st.ptt = true; st.carry = '';
+  if (!st.listening) startListening(); else clearTimeout(st.silenceTimer);
+  refreshMic();
+});
+function releasePTT() {
+  if (!st.ptt) return;
+  st.ptt = false;
+  if (st.listening) finishListening();
+  else if (st.carry) { const t = st.carry; st.carry = ''; showInterim(); processText(t, recogLang(), paceOf(t)); }
+}
+document.addEventListener('keyup', e => { if (e.code === 'Space' && st.ptt) { e.preventDefault(); releasePTT(); } });
+window.addEventListener('blur', releasePTT);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && st.listening) { if (st.conv) st.paused = true; abortListening(); }
+});
+
+/* delegated card / list actions */
+function toneFor(el) {
+  const card = el.closest && el.closest('.card[data-id]');
+  if (card) { const e = history.find(h => h.id === card.dataset.id); if (e) return e.tone || null; }
+  const it = el.closest && el.closest('[data-pid]');
+  if (it) { const p = phrasebook.find(x => x.id === it.dataset.pid); if (p) return p.tone || null; }
+  return null;
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  const box = b.closest('[data-text]');
+  const text = box && box.dataset.text, code = box && box.dataset.code;
+  const tone = toneFor(b);
+  switch (act) {
+    case 'play': speakSeq([{ text, code, tone }]); break;
+    case 'slow': speakSeq([{ text, code, tone }], { rate: 0.7 }); break;
+    case 'x3': speakSeq([{ text, code, tone }], { times: 3 }); break;
+    case 'myturn': doMyTurn(text, code, box.querySelector('.score'), b); break;
+    case 'words': { const w = box.querySelector('.words'); w.hidden = !w.hidden; b.setAttribute('aria-expanded', String(!w.hidden)); break; }
+    case 'say-word': speakSeq([{ text: b.dataset.word, code }], { rate: Math.min(settings.rate, 0.85) }); break;
+    case 'save': toggleSave(b.closest('.card').dataset.id, code); break;
+    case 'retry': {
+      const card = b.closest('.card'), entry = history.find(h => h.id === card.dataset.id); if (!entry) break;
+      const loading = renderCard(entry, { loading: true }); card.replaceWith(loading); runTranslation(entry, loading); break;
+    }
+    case 'open-settings': openSettings(); break;
+    case 'sample': processText(b.dataset.sample, 'typed'); break;
+    case 'export': exportCSV(); break;
+    case 'share': shareInMyVoice(b, box, text, code, tone); break;
+    case 'myvoice': playMyVoice(box, text, code, tone); break;
+    case 'voice-share': { const pnl = b.closest('.voice-panel'), bx = pnl.parentElement.closest('[data-text]'); const f = voicePanelFiles.get(pnl); if (f) shareFile(f, shareMessage(bx.querySelector('[data-act="share"]') || bx, bx.dataset.text, bx.dataset.code)); break; }
+    case 'voice-close': { const pnl = b.closest('.voice-panel'); pnl.hidden = true; pnl.innerHTML = ''; break; }
+    case 'pb-del': {
+      const pid = box.dataset.pid, p = phrasebook.find(x => x.id === pid);
+      phrasebook = phrasebook.filter(x => x.id !== pid); savePhrasebook(); renderPhrasebook();
+      if (p) syncSaveButtons(p.entryId, p.code);
+      toast('Removed from phrasebook'); break;
+    }
+    case 'goto': showView(b.dataset.view); break;
+    case 'pr-next': nextPractice(); break;
+    case 'pr-reveal': revealPractice(); speakSeq([{ text, code }]); break;
+    case 'pr-say': {
+      b.disabled = true;
+      const res = await doMyTurn(text, code, box.querySelector('.score'), b);
+      b.disabled = false;
+      if (res) { pr.n++; pr.sum += res.score; const s = $('#prBody .pr-stats'); if (s) s.textContent = `This session: ${pr.n} attempt${pr.n > 1 ? 's' : ''} · average ${Math.round(pr.sum / pr.n)}/100`; }
+      revealPractice();
+      if (res && settings.autoSpeak) speakSeq([{ text, code }]);
+      break;
+    }
+    case 'quiz-start': startQuiz(); break;
+    case 'quiz-ans': answerQuiz(b); break;
+    case 'quiz-next': qz.i++; renderQuiz(); break;
+    case 'test-voice': { const t = T(b.dataset.code); speakSeq([{ text: t.sample, code: t.code }]); break; }
+  }
+});
+
+/* ---------- init ---------- */
+bindSettings();
+applySettings();
+renderFeed();
+showUnsupported(false);
+if (!window.isSecureContext) banner('secure', 'The microphone only works on <b>https://</b> or <b>http://localhost</b>. Open this file from a local server or an https host.', 'err');
+if (!settings.apiKey) banner('key', 'Add your translation API key in <button class="btn" data-act="open-settings" style="min-height:32px;padding:0 10px">⚙ Settings</button> to start.');
+dlg.addEventListener('close', () => { if (settings.apiKey) banner('key', ''); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (settings.dark == null) applyTheme(); });
+requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight }));
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { }); });
+}
+
+// test hook (read-only helpers for automated checks)
+window.__pf = { scoreAttempt, buildSchema, buildSystem, normWords };
+})();
+</script>
+</body>
+</html>
